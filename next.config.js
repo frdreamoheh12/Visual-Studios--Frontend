@@ -6,10 +6,6 @@ const nextConfig = {
   trailingSlash: true,
 
   basePath: "/Visual-Studios--Frontend",
-
-  images: {
-    unoptimized: true,
-  },
 };
 
 module.exports = nextConfig;
