@@ -6,7 +6,6 @@ const nextConfig = {
   trailingSlash: true,
 
   basePath: "/Visual-Studios--Frontend",
-  assetPrefix: "/Visual-Studios--Frontend/",
 
   images: {
     unoptimized: true,
