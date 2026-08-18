@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { api, ApiClientError } from "@/lib/api";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
@@ -30,18 +30,31 @@ export default function ResetPasswordPage() {
       setError("This reset link is missing its token. Request a new one.");
       return;
     }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      await api.post("/auth/reset-password", { token, password });
+      await api.post("/auth/reset-password", {
+        token,
+        password,
+      });
+
       setDone(true);
-      setTimeout(() => router.push("/login"), 2000);
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err) {
-      const message = err instanceof ApiClientError ? err.message : "Something went wrong.";
+      const message =
+        err instanceof ApiClientError
+          ? err.message
+          : "Something went wrong.";
+
       setError(message);
     } finally {
       setIsLoading(false);
@@ -49,7 +62,10 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <AuthShell title="Set a new password" subtitle="Choose a strong password for your account.">
+    <AuthShell
+      title="Set a new password"
+      subtitle="Choose a strong password for your account."
+    >
       <AnimatePresence mode="wait">
         {done ? (
           <motion.div
@@ -61,8 +77,14 @@ export default function ResetPasswordPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
               <CheckCircle2 size={22} />
             </div>
-            <p className="text-sm font-medium text-white">Password updated</p>
-            <p className="text-sm text-white/50">Redirecting you to sign in…</p>
+
+            <p className="text-sm font-medium text-white">
+              Password updated
+            </p>
+
+            <p className="text-sm text-white/50">
+              Redirecting you to sign in…
+            </p>
           </motion.div>
         ) : (
           <motion.form
@@ -82,10 +104,12 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
                 required
               />
+
               <div className="mt-2">
                 <PasswordStrength password={password} />
               </div>
             </div>
+
             <Input
               label="Confirm new password"
               type="password"
@@ -96,21 +120,55 @@ export default function ResetPasswordPage() {
             />
 
             {error && (
-              <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
+              <p
+                role="alert"
+                className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400"
+              >
                 {error}
               </p>
             )}
 
-            <Button type="submit" isLoading={isLoading} className="w-full" magnetic={false}>
+            <Button
+              type="submit"
+              isLoading={isLoading}
+              className="w-full"
+              magnetic={false}
+            >
               Update password
             </Button>
 
-            <Link href="/login" className="vs-focus text-center text-sm text-white/40 hover:text-white/70">
+            <Link
+              href="/login"
+              className="vs-focus text-center text-sm text-white/40 hover:text-white/70"
+            >
               Back to sign in
             </Link>
           </motion.form>
         )}
       </AnimatePresence>
     </AuthShell>
+  );
+}
+
+function ResetPasswordFallback() {
+  return (
+    <AuthShell
+      title="Set a new password"
+      subtitle="Choose a strong password for your account."
+    >
+      <div className="vs-panel rounded-xl2 px-6 py-8 text-center">
+        <p className="text-sm text-white/50">
+          Loading reset link…
+        </p>
+      </div>
+    </AuthShell>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
