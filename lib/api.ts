@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://visual-studios-backend1.onrender.com";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://visual-studios-backend1.onrender.com";
 
 export class ApiClientError extends Error {
   status: number;
@@ -15,10 +17,13 @@ interface RequestOptions extends RequestInit {
   json?: unknown;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<T> {
   const { json, headers, ...rest } = options;
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${API_URL}/api${path}`, {
     ...rest,
     credentials: "include",
     headers: {
@@ -28,22 +33,51 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     body: json ? JSON.stringify(json) : rest.body,
   });
 
-  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const isJson = res.headers
+    .get("content-type")
+    ?.includes("application/json");
+
   const data = isJson ? await res.json() : null;
 
   if (!res.ok) {
-    throw new ApiClientError(res.status, data?.message ?? "Something went wrong.", data?.details);
+    throw new ApiClientError(
+      res.status,
+      data?.message ?? "Something went wrong.",
+      data?.details
+    );
   }
 
   return data as T;
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path, { method: "GET" }),
-  post: <T>(path: string, json?: unknown) => request<T>(path, { method: "POST", json }),
-  put: <T>(path: string, json?: unknown) => request<T>(path, { method: "PUT", json }),
-  patch: <T>(path: string, json?: unknown) => request<T>(path, { method: "PATCH", json }),
-  del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  get: <T>(path: string) =>
+    request<T>(path, {
+      method: "GET",
+    }),
+
+  post: <T>(path: string, json?: unknown) =>
+    request<T>(path, {
+      method: "POST",
+      json,
+    }),
+
+  put: <T>(path: string, json?: unknown) =>
+    request<T>(path, {
+      method: "PUT",
+      json,
+    }),
+
+  patch: <T>(path: string, json?: unknown) =>
+    request<T>(path, {
+      method: "PATCH",
+      json,
+    }),
+
+  del: <T>(path: string) =>
+    request<T>(path, {
+      method: "DELETE",
+    }),
 };
 
 export { API_URL };
