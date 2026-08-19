@@ -32,6 +32,8 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: https://visual-studios-backend1.onrender.com
         run: npm run build
 
       - name: Upload Pages artifact
